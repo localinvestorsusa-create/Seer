@@ -14,6 +14,7 @@ user's Downloads folder; only app installers and update packages go to GitHub.
    `release/PUBLIC-README.md` if the repository has no commit yet.
 2. `release/github-repo-url.txt` already contains this repository address.
    Keep using it for future releases; installed copies look here for updates.
+   The public source lives in this same repository under the MIT license.
 3. In VS Code choose **Terminal > Run Task... > Sign in to GitHub (one time)**.
    When asked to authenticate Git, press **Y** and **Enter**. GitHub CLI then
    shows a one-time code; press **Enter** to open the browser, enter that code
@@ -34,9 +35,9 @@ user's Downloads folder; only app installers and update packages go to GitHub.
 2. Exit the old Seer ZIP copy through its tray icon, then run the new `Setup.exe`
    to check the installed version. The old extracted folder will remain on your
    computer until you remove it yourself; do not run both copies together.
-3. Choose **Terminal > Run Task... > Publish Seer to GitHub**. This builds again
-   from the saved source files, uploads the installer and update files, and
-   publishes version `1.0.0` (or the number in `release/next-version.txt`).
+3. Choose **Terminal > Run Task... > Publish Seer to GitHub**. This first
+   commits and uploads the source, then builds again, uploads the installer and
+   update files, and publishes the number in `release/next-version.txt`.
 4. Share `https://github.com/localinvestorsusa-create/Seer/releases/latest`. Visitors
    download the `Setup.exe` listed under **Assets**. After publishing succeeds,
    the task advances `release/next-version.txt` to the next patch version.
@@ -47,11 +48,13 @@ user's Downloads folder; only app installers and update packages go to GitHub.
 ## Every later update
 
 Edit the `.cs` files and press **Ctrl+S**. Run **Build Recorder** or **Run
-Recorder** to check your changes. Then run **Publish Seer to GitHub**. The
+Recorder** to check your changes. Then run **Publish Seer to GitHub**. That
+task uploads source changes first, then publishes the installable release. The
 published release is what installed copies can download; saving a file alone
 does not update anybody's app. Keep the version number increasing for each
 release. If an upload fails, retry with the same version after resolving the
-error; the version file advances only after a successful upload.
+error; the version file advances only after a successful upload. To upload
+source without making a new installer, use **Publish Seer source to GitHub**.
 
 The older local ZIP copy does not receive these updates. Each person needs to
 install the GitHub `Setup.exe` once. FFmpeg still needs the app's one-time

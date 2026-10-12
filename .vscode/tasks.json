@@ -42,6 +42,18 @@
       "presentation": { "reveal": "always", "panel": "dedicated" }
     },
     {
+      "label": "Publish Seer source to GitHub",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", "${workspaceFolder}/scripts/Publish-Source.ps1"
+      ],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
       "label": "Build Seer installer",
       "type": "process",
       "command": "powershell.exe",

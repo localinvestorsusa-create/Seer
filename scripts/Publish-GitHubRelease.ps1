@@ -36,6 +36,11 @@ if ($version -notmatch '^(?<major>[0-9]+)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)$')
 $major = [int]$Matches.major
 $minor = [int]$Matches.minor
 $patch = [int]$Matches.patch
+
+# Keep the public source repository in sync with the binary being released.
+& (Join-Path $PSScriptRoot 'Publish-Source.ps1') -CommitMessage "Prepare Seer $version source"
+if ($LASTEXITCODE -ne 0) { throw 'Could not publish the Seer source first.' }
+
 $dist = Join-Path $root 'dist'
 $name = 'Seer-' + $version + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 6)
 $releaseDir = Join-Path $dist $name
@@ -63,4 +68,10 @@ $nextVersion = "$major.$minor.$($patch + 1)"
 Set-Content -LiteralPath $versionFile -Value $nextVersion -NoNewline
 Write-Host "Published: $repo/releases/tag/v$version"
 Write-Host "Public download page: $repo/releases/latest"
+try {
+    & (Join-Path $PSScriptRoot 'Publish-Source.ps1') -CommitMessage "Set next Seer version to $nextVersion"
+}
+catch {
+    Write-Warning "The release is live, but the next-version source change was not uploaded: $_"
+}
 Write-Host "Next version is now $nextVersion. Installed copies will check for updates while running."
