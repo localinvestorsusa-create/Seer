@@ -1,0 +1,15 @@
+{
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "packages": true,
+    "store": true
+  },
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "dist": true,
+    "packages": true,
+    "store": true
+  }
+}
