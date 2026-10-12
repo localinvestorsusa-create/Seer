@@ -51,8 +51,39 @@ try {
         & git commit -m $CommitMessage
         if ($LASTEXITCODE -ne 0) { throw 'Could not commit the source changes.' }
     }
-    & git push --set-upstream origin main
-    if ($LASTEXITCODE -ne 0) { throw 'Could not upload Seer source to GitHub. The local commit is saved; retry this task.' }
+    $ghCommand = Get-Command gh -ErrorAction SilentlyContinue
+    $ghPath = if ($ghCommand) { $ghCommand.Source } else { Join-Path $root 'tools\gh.exe' }
+    if (-not (Test-Path -LiteralPath $ghPath -PathType Leaf)) {
+        throw 'GitHub CLI is missing. Install it from https://cli.github.com/ and sign in before publishing source.'
+    }
+    $token = & $ghPath auth token 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($token)) {
+        throw 'Run the Sign in to GitHub (one time) task before publishing source.'
+    }
+
+    # Supply the credential to this one Git process without putting it in a
+    # command line, Git remote URL, project file, or Git credential helper.
+    $previousCount = [Environment]::GetEnvironmentVariable('GIT_CONFIG_COUNT', 'Process')
+    $index = if ([string]::IsNullOrWhiteSpace($previousCount)) { 0 } else { [int]$previousCount }
+    $keyName = "GIT_CONFIG_KEY_$index"
+    $valueName = "GIT_CONFIG_VALUE_$index"
+    $previousKey = [Environment]::GetEnvironmentVariable($keyName, 'Process')
+    $previousValue = [Environment]::GetEnvironmentVariable($valueName, 'Process')
+    try {
+        $basic = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("x-access-token:$($token.Trim())"))
+        [Environment]::SetEnvironmentVariable('GIT_CONFIG_COUNT', ($index + 1).ToString(), 'Process')
+        [Environment]::SetEnvironmentVariable($keyName, 'http.https://github.com/.extraheader', 'Process')
+        [Environment]::SetEnvironmentVariable($valueName, "AUTHORIZATION: basic $basic", 'Process')
+        & git push --set-upstream origin main
+        if ($LASTEXITCODE -ne 0) { throw 'Could not upload Seer source to GitHub. The local commit is saved; retry this task.' }
+    }
+    finally {
+        [Environment]::SetEnvironmentVariable('GIT_CONFIG_COUNT', $previousCount, 'Process')
+        [Environment]::SetEnvironmentVariable($keyName, $previousKey, 'Process')
+        [Environment]::SetEnvironmentVariable($valueName, $previousValue, 'Process')
+        $token = $null
+        $basic = $null
+    }
     Write-Host "Source published: $repo"
 }
 finally {
